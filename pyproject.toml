@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hospital-assistant-ai"
+version = "0.1.0"
+description = "Sistema de Asistencia Hospitalaria con IA Generativa"
+requires-python = ">=3.11"
+readme = "README.md"
+authors = [
+  { name = "Sebastian Ahern Ruiz", email = "sebastianahern@gmail.com" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "langchain",
+    "ollama",
+    "streamlit",
+    "sqlalchemy",
+    "psycopg2-binary", # For PostgreSQL adapter
+    "pydantic",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "black",
+    "isort",
+    "mypy"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-ra -q"
