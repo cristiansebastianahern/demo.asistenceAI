@@ -18,8 +18,8 @@ class HospitalAssistantUseCase:
     
     def __init__(
         self,
-        database_uri: str = "sqlite:///hospital.db",
-        model_name: str = "qwen2.5-coder:latest"
+        database_uri: str = "sqlite:///data/hospital.db",
+        model_name: str = "qwen2.5-coder:1.5b"
     ):
         """
         Initialize the use case with dependencies.

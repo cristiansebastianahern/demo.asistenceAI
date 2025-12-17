@@ -18,6 +18,8 @@ classifiers = [
 ]
 dependencies = [
     "langchain",
+    "langchain-community",
+    "langchain-ollama",
     "ollama",
     "streamlit",
     "sqlalchemy",

@@ -4,7 +4,7 @@ Main Streamlit application for Hospital Assistant AI.
 import streamlit as st
 from src.application.use_cases import HospitalAssistantUseCase
 from src.infrastructure.exceptions import LLMConnectionError, DatabaseConnectionError
-from .components import display_chat_message, display_example_questions, display_system_status
+from src.ui.components import display_chat_message, display_example_questions, display_system_status
 
 # Page configuration
 st.set_page_config(

@@ -1,5 +1,5 @@
 """
-Database connection management using SQLAlchemy.
+Gestión de conexión a la base de datos usando SQLAlchemy.
 """
 from contextlib import contextmanager
 from typing import Generator
@@ -12,19 +12,19 @@ Base = declarative_base()
 
 class DatabaseManager:
     """
-    Manages database connections and sessions.
-    
-    Supports both SQLite (development) and PostgreSQL (production).
+    Administra conexiones y sesiones de base de datos.
+
+    Soporta tanto SQLite (desarrollo) como PostgreSQL (producción).
     """
     
-    def __init__(self, connection_string: str = "sqlite:///hospital.db"):
+    def __init__(self, connection_string: str = "sqlite:///data/hospital.db"):
         """
-        Initialize the database manager.
-        
-        Args:
-            connection_string: SQLAlchemy connection string.
-                              Default: "sqlite:///hospital.db"
-                              PostgreSQL example: "postgresql://user:pass@localhost/dbname"
+        Inicializa el gestor de base de datos.
+
+        Argumentos:
+            connection_string: Cadena de conexión SQLAlchemy.
+            Predeterminado: "sqlite:///data/hospital.db"
+            Ejemplo PostgreSQL: "postgresql://user:pass@localhost/dbname"
         """
         try:
             self.engine = create_engine(
@@ -38,7 +38,7 @@ class DatabaseManager:
                 bind=self.engine
             )
         except Exception as e:
-            raise DatabaseConnectionError(f"Failed to connect to database: {e}")
+            raise DatabaseConnectionError(f"Error al conectar a la base de datos: {e}")
     
     @contextmanager
     def get_session(self) -> Generator[Session, None, None]:

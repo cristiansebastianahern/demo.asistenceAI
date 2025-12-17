@@ -1,19 +1,27 @@
 """
-Custom exceptions for the Infrastructure layer.
+Excepciones personalizadas para la capa de infraestructura.
 """
 
 class DatabaseConnectionError(Exception):
-    """Raised when database connection fails."""
+    """
+Se lanza cuando falla la conexión a la base de datos.
+"""
     pass
 
 class LLMConnectionError(Exception):
-    """Raised when LLM service is unavailable."""
+    """
+Se lanza cuando el servicio LLM no está disponible.
+"""
     pass
 
 class PatientNotFoundError(Exception):
-    """Raised when a patient is not found in the database."""
+    """
+Se lanza cuando no se encuentra un paciente en la base de datos.
+"""
     pass
 
 class AreaNotFoundError(Exception):
-    """Raised when a hospital area is not found in the database."""
+    """
+Se lanza cuando no se encuentra un área del hospital en la base de datos.
+"""
     pass

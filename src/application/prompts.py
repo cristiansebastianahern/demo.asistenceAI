@@ -41,3 +41,34 @@ Al responder:
 3. Si hay múltiples resultados, presenta una lista numerada
 4. Si no hay resultados, sugiere alternativas o reformular la pregunta
 """
+
+# New templates based on working prototype
+SQL_GENERATION_TEMPLATE = """Role: SQL Expert.
+Task: Generate SQL query for SQLite.
+
+Tables:
+- areas (nombre, ubicacion, tiempo_espera_minutos)
+- pacientes (nombre_completo, estado, ubicacion_actual, diagnostico_breve)
+
+CRITICAL RULES:
+1. ALWAYS use wildcard % for text searches. Example: LIKE '%Name%'
+2. Return ONLY the SQL code.
+
+Examples:
+Q: Rayos X? -> SELECT ubicacion, tiempo_espera_minutos FROM areas WHERE nombre LIKE '%Rayos%';
+Q: Juan? -> SELECT estado, ubicacion_actual, diagnostico_breve FROM pacientes WHERE nombre_completo LIKE '%Juan%';
+
+Question: {question}
+SQL:"""
+
+RESPONSE_FORMATTING_TEMPLATE = """Task: Format the database result into a clean Spanish sentence.
+User Question: {question}
+Data: {result}
+
+Instructions:
+- Do NOT repeat the question.
+- Construct a direct answer based on the Data.
+- Example: "El paciente está en X con estado Y."
+
+Respuesta:"""
+

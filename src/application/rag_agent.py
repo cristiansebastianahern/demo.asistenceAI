@@ -1,33 +1,40 @@
 """
 RAG Agent implementation using LangChain for SQL database querying.
+Based on the working prototype agente_hospital_v5.py.
 """
+import re
+import ast
 from typing import Optional
 from langchain_community.utilities import SQLDatabase
-from langchain.chains import create_sql_query_chain
-from langchain_community.llms import Ollama
+from langchain_community.tools.sql_database.tool import QuerySQLDataBaseTool
+from langchain_ollama import OllamaLLM
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from src.infrastructure.llm_client import OllamaClient
 from src.infrastructure.exceptions import LLMConnectionError
-from .prompts import SYSTEM_PROMPT, DATABASE_SCHEMA_CONTEXT, RESPONSE_FORMAT_GUIDELINES
+from .prompts import SQL_GENERATION_TEMPLATE, RESPONSE_FORMATTING_TEMPLATE
+
 
 class RAGAgent:
     """
-    Retrieval-Augmented Generation agent for hospital database queries.
-    
-    Uses LangChain to translate natural language questions into SQL queries
-    and format responses appropriately.
+    Agente de Recuperación Aumentada (RAG) para consultas a la base de datos del hospital.
+
+    Utiliza LangChain para traducir preguntas en lenguaje natural a consultas SQL
+    y formatea las respuestas adecuadamente. Basado en el prototipo funcional con
+    aplicación de comodines y enfoque de dos fases.
     """
     
     def __init__(
         self,
-        database_uri: str = "sqlite:///hospital.db",
-        model_name: str = "qwen2.5-coder:latest"
+        database_uri: str = "sqlite:///data/hospital.db",
+        model_name: str = "qwen2.5-coder:1.5b"
     ):
         """
-        Initialize the RAG agent.
-        
-        Args:
-            database_uri: SQLAlchemy database connection string.
-            model_name: Ollama model name to use.
+        Inicializa el agente RAG.
+
+        Parámetros:
+            database_uri: Cadena de conexión SQLAlchemy a la base de datos.
+            model_name: Nombre del modelo Ollama a usar.
         """
         self.ollama_client = OllamaClient(model_name=model_name)
         self.model_name = model_name
@@ -36,34 +43,57 @@ class RAGAgent:
         # Initialize LangChain components
         try:
             self.db = SQLDatabase.from_uri(database_uri)
-            self.llm = Ollama(model=model_name, temperature=0.3)
+            # Lower temperature for SQL generation (more deterministic)
+            self.llm = OllamaLLM(model=model_name, temperature=0.1)
+            
+            # Setup SQL generation chain
+            self.sql_prompt = PromptTemplate.from_template(SQL_GENERATION_TEMPLATE)
+            self.sql_chain = self.sql_prompt | self.llm | StrOutputParser()
+            
+            # Setup response formatting chain
+            self.response_prompt = PromptTemplate.from_template(RESPONSE_FORMATTING_TEMPLATE)
+            self.response_chain = self.response_prompt | self.llm | StrOutputParser()
+            
+            # Setup query execution tool
+            self.query_tool = QuerySQLDataBaseTool(db=self.db)
+            
         except Exception as e:
-            raise LLMConnectionError(f"Failed to initialize RAG agent: {e}")
+            raise LLMConnectionError(f"Error al inicializar el agente RAG: {e}")
     
-    def _build_context_prompt(self, question: str) -> str:
+    def _clean_sql(self, raw_sql: str) -> str:
         """
-        Build a context-aware prompt for the LLM.
+        Clean SQL query from LLM output.
+        
+        Extracts SQL from markdown code blocks or finds SELECT statements.
         
         Args:
-            question: User's natural language question.
+            raw_sql: Raw output from LLM that may contain SQL.
             
         Returns:
-            Formatted prompt with context.
+            Cleaned SQL query string.
         """
-        return f"""{SYSTEM_PROMPT}
-
-{DATABASE_SCHEMA_CONTEXT}
-
-{RESPONSE_FORMAT_GUIDELINES}
-
-Pregunta del usuario: {question}
-
-Genera una consulta SQL para responder esta pregunta. La consulta debe ser válida para SQLite.
-"""
+        # Try to extract from markdown code block
+        code_block_pattern = r"```sql\s*(.*?)\s*```"
+        match = re.search(code_block_pattern, raw_sql, re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        
+        # Try to find SELECT statement
+        select_pattern = r"(SELECT.*?(?:;|$))"
+        match = re.search(select_pattern, raw_sql, re.IGNORECASE | re.DOTALL)
+        if match:
+            return match.group(1).strip()
+        
+        # Return as-is if no pattern matched
+        return raw_sql.strip()
     
     def query(self, question: str) -> str:
         """
         Process a natural language question and return an answer.
+        
+        Uses a two-phase approach:
+        1. Generate SQL query from question
+        2. Execute query and format results into natural language
         
         Args:
             question: User's question in natural language.
@@ -81,37 +111,35 @@ Genera una consulta SQL para responder esta pregunta. La consulta debe ser váli
         """
         if not self.ollama_client.is_available():
             raise LLMConnectionError(
-                "Ollama service is not available. Please ensure it's running."
+                "El servicio Ollama no está disponible. Por favor, asegúrate de que esté ejecutándose."
             )
         
         try:
-            # Create SQL query chain
-            chain = create_sql_query_chain(self.llm, self.db)
+            # Phase 1: Generate SQL query
+            raw_sql = self.sql_chain.invoke({"question": question})
+            clean_sql = self._clean_sql(raw_sql)
             
-            # Generate SQL query from natural language
-            sql_query = chain.invoke({"question": question})
+            # Phase 2: Execute query
+            result_str = self.query_tool.invoke(clean_sql)
             
-            # Execute the query
-            result = self.db.run(sql_query)
+            # Phase 3: Parse and check results
+            try:
+                result_list = ast.literal_eval(result_str)
+            except:
+                result_list = []
             
-            # Format the response using the LLM
-            response_prompt = f"""Basándote en estos resultados de la base de datos:
-{result}
-
-Responde a la pregunta del usuario de forma clara y concisa en español:
-{question}
-
-Respuesta:"""
-            
-            formatted_response = self.ollama_client.generate(
-                response_prompt,
-                temperature=0.5
-            )
-            
-            return formatted_response
-            
+            # Phase 4: Format response
+            if not result_list:
+                return "No encontré registros en el sistema que coincidan con tu búsqueda."
+            else:
+                formatted_response = self.response_chain.invoke({
+                    "question": question,
+                    "result": result_str
+                })
+                return formatted_response
+                
         except Exception as e:
-            # Fallback: try direct LLM query without SQL
+            # Fallback error handling
             return self._fallback_query(question, str(e))
     
     def _fallback_query(self, question: str, error: str) -> str:
@@ -125,7 +153,7 @@ Respuesta:"""
         Returns:
             Informative error message or alternative response.
         """
-        fallback_prompt = f"""No pude generar una consulta SQL válida para: "{question}"
+        return f"""No pude generar una consulta SQL válida para: "{question}"
 
 Error: {error}
 
@@ -136,4 +164,3 @@ Puedo ayudarte con:
 - Ubicación de áreas del hospital
 - Tiempos de espera en diferentes áreas
 """
-        return fallback_prompt

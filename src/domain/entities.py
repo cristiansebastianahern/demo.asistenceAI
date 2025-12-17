@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 class Patient(BaseModel):
     """
-    Domain entity representing a hospital patient.
+    Entidad de dominio que representa a un paciente del hospital.
     """
     id: int = Field(..., description="Unique identifier of the patient")
     full_name: str = Field(..., description="Full name of the patient")
@@ -13,7 +13,7 @@ class Patient(BaseModel):
 
 class HospitalArea(BaseModel):
     """
-    Domain entity representing a physical area in the hospital.
+    Entidad de dominio que representa un área física del hospital.
     """
     id: int = Field(..., description="Unique identifier of the area")
     name: str = Field(..., description="Name of the area (e.g., 'Urgencias')")
