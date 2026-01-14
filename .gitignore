@@ -1,26 +1,32 @@
-# Python
+# --- Entorno y Secretos ---
+.env
+.venv/
+env/
+venv/
+*.env
+secrets.toml
+.streamlit/secrets.toml
+antigravity_project_rules.md
+
+# --- Bases de Datos (Legacy & Logs) ---
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+legacy_backup/
+*.log
+
+# --- Python ---
 __pycache__/
 *.py[cod]
 *$py.class
+.pytest_cache/
+.coverage
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# Database
-*.db
-*.sqlite3
-
-# Distribution / Packaging
-dist/
-build/
-*.egg-info/
-
-# IDE
-.idea/
+# --- IDE & OS ---
 .vscode/
+.idea/
+.DS_Store
+
+# --- Docker ---
+postgres_data/
