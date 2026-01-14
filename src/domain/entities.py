@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, Field
 
 class Patient(BaseModel):
@@ -19,3 +20,22 @@ class HospitalArea(BaseModel):
     name: str = Field(..., description="Name of the area (e.g., 'Urgencias')")
     location: str = Field(..., description="Description of the location")
     wait_time_minutes: int = Field(..., description="Estimated wait time in minutes")
+
+class UserRole(BaseModel):
+    """
+    Entidad que representa un rol de usuario (ADMIN, MEDICO, PACIENTE).
+    """
+    id: int
+    name: str
+    description: Optional[str] = None
+
+class User(BaseModel):
+    """
+    Entidad de dominio que representa a un usuario del sistema Nexa.
+    """
+    id: str # UUID
+    rut: str
+    full_name: str
+    email: str
+    role: UserRole
+    is_active: bool = True

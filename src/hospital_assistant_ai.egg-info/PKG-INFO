@@ -1,0 +1,64 @@
+Metadata-Version: 2.4
+Name: hospital-assistant-ai
+Version: 0.1.0
+Summary: Sistema de Asistencia Hospitalaria con IA Generativa
+Author-email: Sebastian Ahern Ruiz <sebastianahern@gmail.com>
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: langchain
+Requires-Dist: ollama
+Requires-Dist: streamlit
+Requires-Dist: sqlalchemy
+Requires-Dist: psycopg2-binary
+Requires-Dist: pydantic
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: black; extra == "dev"
+Requires-Dist: isort; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+
+# HospitalAssistant-AI
+
+## Overview
+HospitalAssistant-AI is a Retrieval-Augmented Generation (RAG) agent designed for Hospital Clínico Magallanes. It allows hospital staff and patients to query a SQL database using natural language.
+
+## Architecture
+The project follows **Clean Architecture** and **SOLID principles** to ensure modularity and scalability.
+
+### Layers
+1.  **Domain (`src/domain`)**: Contains core business entities and repository interfaces. Independent of external libraries.
+2.  **Application (`src/application`)**: Implement business use cases and application logic (e.g., RAG orchestration).
+3.  **Infrastructure (`src/infrastructure`)**: Implements interfaces defined in the Domain layer. Content generic database adapters and LLM clients (Ollama).
+4.  **UI (`src/ui`)**: The presentation layer, built with Streamlit.
+
+### Tech Stack
+-   **Language**: Python 3.11+
+-   **Frontend**: Streamlit
+-   **LLM Integration**: LangChain + Ollama
+-   **Database**: SQLite (Dev) / PostgreSQL (Prod) via SQLAlchemy, use hospital.db as database.
+-   **Containerization**: Docker
+
+## Setup
+### Prerequisites
+- Python 3.11+
+- Ollama (running locally)
+
+### Installation
+1.  Install dependencies:
+    ```bash
+    pip install -e .[dev]
+    ```
+
+2.  Run the application:
+    ```bash
+    streamlit run src/ui/main.py
+    ```
+
+3.  Run tests:
+    ```bash
+    pytest
+    ```

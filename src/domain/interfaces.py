@@ -1,5 +1,21 @@
+from .entities import Patient, HospitalArea, User
 from typing import Protocol, List, Optional
-from .entities import Patient, HospitalArea
+
+class UserRepository(Protocol):
+    """
+    Interface for accessing User data.
+    """
+    def get_user_by_email(self, email: str) -> Optional[User]:
+        """Retrieve a user by their email address."""
+        ...
+
+    def get_user_by_rut(self, rut: str) -> Optional[User]:
+        """Retrieve a user by their RUT."""
+        ...
+
+    def get_password_hash(self, user_id: str) -> Optional[str]:
+        """Retrieve the hashed password for a specific user."""
+        ...
 
 class PatientRepository(Protocol):
     """

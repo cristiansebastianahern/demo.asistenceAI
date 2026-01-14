@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: nexa_db_local
+    restart: always
+    environment:
+      POSTGRES_USER: nexa_admin
+      POSTGRES_PASSWORD: D3x31(Kd.oB1
+      POSTGRES_DB: nexa_db
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persistencia de datos (para no perder nada al apagar)
+      - postgres_data:/var/lib/postgresql/data
+      # MAGIA: Carga automática del script SQL al iniciar por primera vez
+      - ./database/init_nexa_full.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - nexa_net
+
+volumes:
+  postgres_data:
+
+
+networks:
+  nexa_net:
+    driver: bridge

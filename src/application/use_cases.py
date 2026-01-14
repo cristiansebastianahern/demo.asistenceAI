@@ -2,11 +2,35 @@
 Application layer use cases for the Hospital Assistant.
 """
 from typing import Optional
-from src.infrastructure.database import DatabaseManager
-from src.infrastructure.repositories import SQLPatientRepository, SQLHospitalAreaRepository
+from src.infrastructure.database import DatabaseManager, DATABASE_URL
+from src.infrastructure.repositories import SQLPatientRepository, SQLHospitalAreaRepository, SQLUserRepository
 from src.infrastructure.llm_client import OllamaClient
 from src.infrastructure.exceptions import LLMConnectionError, DatabaseConnectionError
+from src.infrastructure.security import verify_password
+from src.domain.entities import User
 from .rag_agent import RAGAgent
+
+class AuthUseCase:
+    """
+    Use case for user authentication.
+    """
+    def __init__(self, database_uri: str = DATABASE_URL):
+        self.db_manager = DatabaseManager(database_uri)
+        self.user_repo = SQLUserRepository(self.db_manager)
+
+    def login(self, email: str, password: str) -> Optional[User]:
+        """
+        Validate user credentials and return User entity if successful.
+        """
+        user = self.user_repo.get_user_by_email(email)
+        if not user or not user.is_active:
+            return None
+        
+        hashed_password = self.user_repo.get_password_hash(user.id)
+        if hashed_password and verify_password(password, hashed_password):
+            return user
+        
+        return None
 
 class HospitalAssistantUseCase:
     """
@@ -18,7 +42,7 @@ class HospitalAssistantUseCase:
     
     def __init__(
         self,
-        database_uri: str = "sqlite:///data/hospital.db",
+        database_uri: str = DATABASE_URL,
         model_name: str = "qwen2.5-coder:1.5b"
     ):
         """

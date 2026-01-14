@@ -1,0 +1,13 @@
+langchain
+ollama
+streamlit
+sqlalchemy
+psycopg2-binary
+pydantic
+
+[dev]
+pytest
+pytest-cov
+black
+isort
+mypy

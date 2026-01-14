@@ -3,11 +3,47 @@ Concrete implementations of repository interfaces using SQLAlchemy.
 """
 from typing import List, Optional
 from sqlalchemy.orm import Session
-from src.domain.entities import Patient, HospitalArea
-from src.domain.interfaces import PatientRepository, HospitalAreaRepository
-from .models import PatientModel, HospitalAreaModel
+from src.domain.entities import Patient, HospitalArea, User, UserRole
+from src.domain.interfaces import PatientRepository, HospitalAreaRepository, UserRepository
+from .models import PatientModel, HospitalAreaModel, UserModel, RoleModel
 from .database import DatabaseManager
 from .exceptions import PatientNotFoundError, AreaNotFoundError
+
+class SQLUserRepository:
+    """
+    SQLAlchemy implementation of UserRepository.
+    """
+    def __init__(self, db_manager: DatabaseManager):
+        self.db_manager = db_manager
+
+    def _model_to_entity(self, model: UserModel) -> User:
+        return User(
+            id=str(model.id),
+            rut=model.rut,
+            full_name=model.nombre_completo,
+            email=model.email,
+            is_active=model.activo,
+            role=UserRole(
+                id=model.role.id,
+                name=model.role.nombre_rol,
+                description=model.role.descripcion
+            )
+        )
+
+    def get_user_by_email(self, email: str) -> Optional[User]:
+        with self.db_manager.get_session() as session:
+            model = session.query(UserModel).filter(UserModel.email == email).first()
+            return self._model_to_entity(model) if model else None
+
+    def get_user_by_rut(self, rut: str) -> Optional[User]:
+        with self.db_manager.get_session() as session:
+            model = session.query(UserModel).filter(UserModel.rut == rut).first()
+            return self._model_to_entity(model) if model else None
+
+    def get_password_hash(self, user_id: str) -> Optional[str]:
+        with self.db_manager.get_session() as session:
+            model = session.query(UserModel).filter(UserModel.id == user_id).first()
+            return model.password_hash if model else None
 
 class SQLPatientRepository:
     """
