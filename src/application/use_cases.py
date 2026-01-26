@@ -97,6 +97,31 @@ class HospitalAssistantUseCase:
                 f"Error al procesar la pregunta: {str(e)}"
             )
     
+    def ask_question_with_debug(self, question: str) -> tuple:
+        """
+        Ask question and return both answer and debug information.
+        
+        Returns:
+            (answer, debug_info) where debug_info contains:
+            - 'schema': Database schema
+            - 'sql': Generated SQL query
+            - 'raw_data': Raw database results
+            - 'final_answer': Formatted answer
+        """
+        if not self.llm_client.is_available():
+            raise LLMConnectionError(
+                "El servicio de IA no está disponible. "
+                "Por favor, asegúrate de que Ollama esté ejecutándose."
+            )
+        
+        try:
+            answer, debug_info = self.rag_agent.query_with_debug(question)
+            return answer, debug_info
+        except Exception as e:
+            raise DatabaseConnectionError(
+                f"Error al procesar la pregunta: {str(e)}"
+            )
+    
     def get_patient_info(self, patient_id: int) -> str:
         """
         Get formatted information about a specific patient.

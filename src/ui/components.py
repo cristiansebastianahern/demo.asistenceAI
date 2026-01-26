@@ -14,7 +14,7 @@ def render_header():
     Renderiza el encabezado oficial con soporte para logos SVG.
     """
     # Rutas a tus logos nuevos
-    logo_path = "src/ui/assets/images/logo-Hospital-light-hori-xl.svg" # Texto Blanco (Para fondo oscuro/header)
+    logo_path = "src/ui/assets/images/logo-Hospital-vertical.svg" # Texto Blanco (Para fondo oscuro/header)
     
     logo_html = ""
     if os.path.exists(logo_path):

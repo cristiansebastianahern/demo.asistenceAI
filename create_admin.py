@@ -13,19 +13,33 @@ def create_super_user():
     
     with engine.connect() as conn:
         try:
-            # 1. Gestionar ROL (Tabla: roles -> nombre_rol)
-            print("🔍 Buscando rol ADMIN...")
-            result = conn.execute(text("SELECT id FROM roles WHERE nombre_rol = 'ADMIN'"))
-            role_row = result.fetchone()
+            # 1. Gestionar ROLES (Tabla: roles -> nombre_rol)
+            print("🔍 Verificando roles del sistema...")
             
-            if not role_row:
+            # Crear rol ADMIN (debe ser id=1)
+            result = conn.execute(text("SELECT id FROM roles WHERE nombre_rol = 'ADMIN'"))
+            admin_role_row = result.fetchone()
+            
+            if not admin_role_row:
                 print("⚠️ Rol ADMIN no existe. Creándolo...")
                 conn.execute(text("INSERT INTO roles (nombre_rol, descripcion) VALUES ('ADMIN', 'Acceso Total del Sistema')"))
                 conn.commit()
-                role_row = conn.execute(text("SELECT id FROM roles WHERE nombre_rol = 'ADMIN'")).fetchone()
+                admin_role_row = conn.execute(text("SELECT id FROM roles WHERE nombre_rol = 'ADMIN'")).fetchone()
             
-            role_id = role_row[0]
-            print(f"✅ Rol asignado ID: {role_id}")
+            role_id = admin_role_row[0]
+            print(f"✅ Rol ADMIN asignado ID: {role_id}")
+            
+            # Crear rol USER (para usuarios regulares, debe ser id=2)
+            result = conn.execute(text("SELECT id FROM roles WHERE nombre_rol = 'USER'"))
+            user_role_row = result.fetchone()
+            
+            if not user_role_row:
+                print("⚠️ Rol USER no existe. Creándolo...")
+                conn.execute(text("INSERT INTO roles (nombre_rol, descripcion) VALUES ('USER', 'Acceso Solo a Chat e Historial Personal')"))
+                conn.commit()
+                print("✅ Rol USER creado exitosamente")
+            else:
+                print(f"✅ Rol USER ya existe con ID: {user_role_row[0]}")
 
             # 2. Encriptar Contraseña
             salt = bcrypt.gensalt()

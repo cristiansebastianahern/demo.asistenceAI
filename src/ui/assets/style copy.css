@@ -1,0 +1,109 @@
+/* Importación de Fuentes (Montserrat + Crimson Pro) */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Montserrat:wght@400;600;700&display=swap');
+
+/* --- SISTEMA DE VARIABLES (THEMING) --- */
+:root {
+    /* Nexa Brand Colors */
+    --nexa-accent: #33ccff;
+    /* Turquoise accent from logo */
+    --nexa-text-primary: #00497a;
+    /* Dark text from logo */
+    --nexa-bg-primary: #ffffff;
+    /* Light background */
+    --nexa-bg-secondary: #f8f9fa;
+    /* Slightly off‑white for cards */
+
+    /* Existing palette (kept for compatibility) */
+    --nexa-blue: #00497aff;
+    --nexa-calipso: #33ccffff;
+
+    /* Semantic variables */
+    --nexa-bg-app: var(--nexa-bg-primary);
+    --nexa-text-main: var(--nexa-text-primary);
+    --nexa-text-body: #2c3e50;
+    --border-radius: 12px;
+}
+
+/* Modo Oscuro (Detección automática) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --nexa-bg-primary: #121212;
+        /* Dark background */
+        --nexa-bg-secondary: #1e1e1e;
+        /* Dark secondary */
+        --nexa-text-primary: #f0f0f0;
+        /* Light text */
+        --nexa-accent: #33ccff;
+        /* Accent stays same */
+        --nexa-bg-app: var(--nexa-bg-primary);
+        --nexa-text-main: var(--nexa-text-primary);
+        --nexa-text-body: #e0e0e0;
+    }
+}
+
+/* --- ESTILOS GLOBALES --- */
+h1,
+h2,
+h3,
+.stButton {
+    font-family: 'Montserrat', sans-serif !important;
+    color: var(--nexa-text-main) !important;
+}
+
+p,
+.stMarkdown,
+.stText {
+    font-family: 'Crimson Pro', serif !important;
+    color: var(--nexa-text-body) !important;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* --- ENCABEZADO PERSONALIZADO --- */
+.nexa-header {
+    /* Gradiente con tus colores oficiales */
+    background: linear-gradient(135deg, var(--nexa-blue) 0%, #00609c 50%, var(--nexa-calipso) 100%);
+    padding: 1.5rem 2rem;
+    border-radius: 0 0 20px 20px;
+    color: white;
+    box-shadow: 0 4px 20px rgba(0, 73, 122, 0.3);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* --- BOTONES --- */
+div.stButton>button {
+    background-color: var(--nexa-blue) !important;
+    /* Botón base Azul */
+    color: white !important;
+    border: 2px solid transparent;
+    border-radius: var(--border-radius);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+div.stButton>button:hover {
+    background-color: transparent !important;
+    border: 2px solid var(--nexa-calipso) !important;
+    color: var(--nexa-calipso) !important;
+    transform: scale(1.02);
+}
+
+/* --- LOGIN CONTAINER --- */
+.login-container {
+    background-color: var(--nexa-bg-secondary);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(51, 204, 255, 0.2);
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.login-container h3 {
+    margin-bottom: 2rem;
+    letter-spacing: -0.5px;
+}

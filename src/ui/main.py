@@ -140,10 +140,18 @@ with st.sidebar:
 
 # VISTA 1: PANEL DE ADMINISTRACIÓN
 if st.session_state.show_admin_panel:
-    # Importamos aquí para evitar ciclos y solo cargar si es necesario
-    from src.ui.admin_panel import render_admin_dashboard
-    # Renderizamos en el área principal (fuera del sidebar)
-    render_admin_dashboard(st.session_state.user)
+    # ✅ RBAC ENFORCEMENT: Verificar que el usuario sea ADMIN
+    user_role = getattr(st.session_state.user, "role", None)
+    if not user_role or user_role.name.upper() != "ADMIN":
+        st.error("⛔ Acceso Denegado: Solo usuarios ADMIN pueden acceder al Panel de Control.")
+        st.warning("Redirigiendo al chat...")
+        st.session_state.show_admin_panel = False
+        st.rerun()
+    else:
+        # Importamos aquí para evitar ciclos y solo cargar si es necesario
+        from src.ui.admin_panel import render_admin_dashboard
+        # Renderizamos en el área principal (fuera del sidebar)
+        render_admin_dashboard(st.session_state.user)
 
 # VISTA 2: CHATBOT (Vista por defecto)
 else:
@@ -168,16 +176,58 @@ else:
         st.session_state.messages.append({"role": "user", "content": prompt})
         display_chat_message("user", prompt)
         
-        with st.spinner("🧠 NEXA está pensando..."):
+        # Generate answer with debug info
+        try:
+            answer, debug_info = st.session_state.hospital_use_case.ask_question_with_debug(prompt)
+            
+            # Append assistant message
+            st.session_state.messages.append({"role": "assistant", "content": answer})
+            display_chat_message("assistant", answer)
+            
+            # ⭐ NEW: Log interaction to database
             try:
-                response = st.session_state.hospital_use_case.ask_question(prompt)
-                st.session_state.messages.append({"role": "assistant", "content": response})
-                display_chat_message("assistant", response)
-            except Exception as e:
-                st.error(f"Error: {e}")
+                # Get user ID from session state
+                user_id = None
+                if st.session_state.user and hasattr(st.session_state.user, 'id'):
+                    user_id = str(st.session_state.user.id)
+                
+                # Log the interaction (non-blocking)
+                if user_id:
+                    from src.infrastructure.admin_repository import AdminRepository
+                    repo = AdminRepository()
+                    repo.log_interaction(
+                        usuario_id=user_id,
+                        pregunta=prompt,
+                        respuesta=answer
+                    )
+            except Exception as log_error:
+                # Don't break the chat if logging fails
+                print(f"⚠️ Error al guardar historial en chat: {log_error}")
+            
+            # Debug expander - "Glass Box" UX
+            with st.expander("🧠 Ver proceso de pensamiento (Debug SQL)", expanded=False):
+                if debug_info.get('error'):
+                    st.error(f"Error: {debug_info['error']}")
+                
+                st.caption("Consulta SQL Generada:")
+                st.code(debug_info.get('sql', 'No SQL generated'), language='sql')
+                
+                st.caption("Datos Crudos de DB:")
+                st.text(debug_info.get('raw_data', 'No data'))
+                
+                if debug_info.get('fallback_sql'):
+                    st.divider()
+                    st.caption("🔄 Fallback SQL executed:")
+                    st.code(debug_info['fallback_sql'], language='sql')
+                    st.caption("Fallback Data:")
+                    st.text(debug_info.get('fallback_raw_data', 'No data'))
+                    
+        except Exception as e:
+            st.error(f"Error: {e}")
                 
         if selected_example:
             st.rerun()
+
 
 
 ######################################################################################
@@ -283,57 +333,13 @@ else:
 #     display_chat_message(message["role"], message["content"])
 
 # # Handle example question selection
-# if selected_example:
-#     st.session_state.messages.append({"role": "user", "content": selected_example})
-#     display_chat_message("user", selected_example)
+# # if selected_example:
+# #     st.session_state.messages.append({"role": "user", "content": selected_example})
+# #     display_chat_message("user", selected_example)
     
-#     # Generate response
-#     with st.spinner("Procesando..."):
-#         try:
-#             response = st.session_state.hospital_use_case.ask_question(selected_example)
-#             st.session_state.messages.append({"role": "assistant", "content": response})
-#             display_chat_message("assistant", response)
-#         except LLMConnectionError as e:
-#             error_msg = f"❌ Error de conexión con el servicio de IA: {str(e)}"
-#             st.error(error_msg)
-#             st.session_state.messages.append({"role": "assistant", "content": error_msg})
-#         except DatabaseConnectionError as e:
-#             error_msg = f"❌ Error de base de datos: {str(e)}"
-#             st.error(error_msg)
-#             st.session_state.messages.append({"role": "assistant", "content": error_msg})
-#         except Exception as e:
-#             error_msg = f"❌ Error inesperado: {str(e)}"
-#             st.error(error_msg)
-#             st.session_state.messages.append({"role": "assistant", "content": error_msg})
+# #     # Generate response
+# #❌ Error inesperado: {str(e)}"
+# #             st.error(error_msg)
+# #             st.session_state.messages.append({"role": "assistant", "content": error_msg})
     
-#     st.rerun()
-
-# # Chat input
-# if prompt := st.chat_input("Escribe tu pregunta aquí..."):
-#     # Add user message
-#     st.session_state.messages.append({"role": "user", "content": prompt})
-#     display_chat_message("user", prompt)
-    
-#     # Generate response
-#     with st.spinner("Procesando..."):
-#         try:
-#             response = st.session_state.hospital_use_case.ask_question(prompt)
-#             st.session_state.messages.append({"role": "assistant", "content": response})
-#             display_chat_message("assistant", response)
-#         except LLMConnectionError as e:
-#             error_msg = f"❌ Error de conexión con el servicio de IA: {str(e)}\n\nAsegúrate de que Ollama esté ejecutándose."
-#             st.error(error_msg)
-#             st.session_state.messages.append({"role": "assistant", "content": error_msg})
-#         except DatabaseConnectionError as e:
-#             error_msg = f"❌ Error de base de datos: {str(e)}"
-#             st.error(error_msg)
-#             st.session_state.messages.append({"role": "assistant", "content": error_msg})
-#         except Exception as e:
-#             error_msg = f"❌ Error inesperado: {str(e)}"
-#             st.error(error_msg)
-#             st.session_state.messages.append({"role": "assistant", "content": error_msg})
-
-# # Clear chat button
-# if st.sidebar.button("🗑️ Limpiar Conversación"):
-#     st.session_state.messages = []
-#     st.rerun()
+# #     st.rerun()

@@ -1,5 +1,5 @@
-/* Importación de Fuentes (Montserrat + Crimson Pro) */
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600&family=Montserrat:wght@400;600;700&display=swap');
+/* Importación de Fuentes (Lato para títulos y Roboto para párrafos y botones) */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Roboto:wght@400;500&display=swap');
 
 /* --- SISTEMA DE VARIABLES (THEMING) --- */
 :root {
@@ -12,57 +12,40 @@
     /* Light background */
     --nexa-bg-secondary: #f8f9fa;
     /* Slightly off‑white for cards */
-
-    /* Existing palette (kept for compatibility) */
-    --nexa-blue: #00497aff;
-    --nexa-calipso: #33ccffff;
-
-    /* Semantic variables */
-    --nexa-bg-app: var(--nexa-bg-primary);
-    --nexa-text-main: var(--nexa-text-primary);
     --nexa-text-body: #2c3e50;
+    /* Dark text for body */
     --border-radius: 12px;
 }
 
-/* Modo Oscuro (Detección automática) */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --nexa-bg-primary: #121212;
-        /* Dark background */
-        --nexa-bg-secondary: #1e1e1e;
-        /* Dark secondary */
-        --nexa-text-primary: #f0f0f0;
-        /* Light text */
-        --nexa-accent: #33ccff;
-        /* Accent stays same */
-        --nexa-bg-app: var(--nexa-bg-primary);
-        --nexa-text-main: var(--nexa-text-primary);
-        --nexa-text-body: #e0e0e0;
-    }
+/* Modo Oscuro */
+[data-theme="dark"] {
+    --nexa-bg-primary: #121212;
+    /* Dark background */
+    --nexa-bg-secondary: #1e1e1e;
+    /* Dark secondary */
+    --nexa-text-primary: #f0f0f0;
+    /* Light text */
+    --nexa-text-body: #e0e0e0;
 }
 
 /* --- ESTILOS GLOBALES --- */
+body {
+    font-family: 'Roboto', sans-serif !important;
+    color: var(--nexa-text-body) !important;
+    background-color: var(--nexa-bg-primary);
+}
+
 h1,
 h2,
 h3,
 .stButton {
-    font-family: 'Montserrat', sans-serif !important;
-    color: var(--nexa-text-main) !important;
-}
-
-p,
-.stMarkdown,
-.stText {
-    font-family: 'Crimson Pro', serif !important;
-    color: var(--nexa-text-body) !important;
-    font-size: 1.1rem;
-    line-height: 1.6;
+    font-family: 'Lato', sans-serif !important;
+    color: var(--nexa-text-primary) !important;
 }
 
 /* --- ENCABEZADO PERSONALIZADO --- */
 .nexa-header {
-    /* Gradiente con tus colores oficiales */
-    background: linear-gradient(135deg, var(--nexa-blue) 0%, #00609c 50%, var(--nexa-calipso) 100%);
+    background: linear-gradient(135deg, var(--nexa-accent) 0%, #00609c 50%, var(--nexa-accent) 100%);
     padding: 1.5rem 2rem;
     border-radius: 0 0 20px 20px;
     color: white;
@@ -75,20 +58,19 @@ p,
 
 /* --- BOTONES --- */
 div.stButton>button {
-    background-color: var(--nexa-blue) !important;
-    /* Botón base Azul */
+    background-color: var(--nexa-accent) !important;
     color: white !important;
     border: 2px solid transparent;
     border-radius: var(--border-radius);
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 600;
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
     transition: all 0.3s ease;
 }
 
 div.stButton>button:hover {
     background-color: transparent !important;
-    border: 2px solid var(--nexa-calipso) !important;
-    color: var(--nexa-calipso) !important;
+    border: 2px solid var(--nexa-accent) !important;
+    color: var(--nexa-accent) !important;
     transform: scale(1.02);
 }
 
